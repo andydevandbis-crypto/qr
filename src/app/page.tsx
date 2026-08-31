@@ -87,7 +87,9 @@ export default function Home() {
         return text;
 
       case "Wi-Fi":
-        return `WIFI:T:${wifiSecurity};S:${wifiSSID};P:${wifiPassword};H:${wifiHidden ? "true" : "false"};;`;
+        return `WIFI:T:${wifiSecurity};S:${wifiSSID};P:${wifiPassword};H:${
+          wifiHidden ? "true" : "false"
+        };;`;
 
       case "Email":
         return `mailto:${email}?subject=${encodeURIComponent(
@@ -262,107 +264,75 @@ END:VEVENT`;
     subtitleColor,
   ]);
 
-const downloadPNG = async () => {
-  if (!qr) return;
+  const downloadPNG = () => {
+    if (!qr) return;
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
-  if (!ctx) return;
+    if (!ctx) return;
 
-  const padding = 40;
-  const titleHeight = title ? 50 : 0;
-  const subtitleHeight = subtitle ? 35 : 0;
-  const textSpacing = title || subtitle ? 25 : 0;
+    const padding = 40;
+    const titleHeight = title ? 50 : 0;
+    const subtitleHeight = subtitle ? 35 : 0;
+    const textSpacing = title || subtitle ? 25 : 0;
 
-  canvas.width = size + padding * 2;
-  canvas.height =
-    size +
-    padding * 2 +
-    titleHeight +
-    subtitleHeight +
-    textSpacing;
+    canvas.width = size + padding * 2;
+    canvas.height =
+      size +
+      padding * 2 +
+      titleHeight +
+      subtitleHeight +
+      textSpacing;
 
-  ctx.fillStyle = backgroundColor;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  let y = padding;
+    let y = padding;
 
-  ctx.textAlign = "center";
+    ctx.textAlign = "center";
 
-  if (title) {
-    ctx.fillStyle = titleColor || qrColor;
-    ctx.font = `bold ${titleSize}px ${titleFont}`;
-    ctx.fillText(title, canvas.width / 2, y + titleSize);
-    y += titleHeight;
-  }
+    if (title) {
+      ctx.fillStyle = titleColor || qrColor;
+      ctx.font = `bold ${titleSize}px ${titleFont}`;
+      ctx.fillText(title, canvas.width / 2, y + titleSize);
+      y += titleHeight;
+    }
 
-  if (subtitle) {
-    ctx.fillStyle = subtitleColor || "#64748b";
-    ctx.font = `${subtitleSize}px ${subtitleFont}`;
-    ctx.fillText(subtitle, canvas.width / 2, y + subtitleSize);
-    y += subtitleHeight;
-  }
+    if (subtitle) {
+      ctx.fillStyle = subtitleColor || "#64748b";
+      ctx.font = `${subtitleSize}px ${subtitleFont}`;
+      ctx.fillText(subtitle, canvas.width / 2, y + subtitleSize);
+      y += subtitleHeight;
+    }
 
-  if (title || subtitle) {
-    y += textSpacing;
-  }
+    if (title || subtitle) {
+      y += textSpacing;
+    }
 
-  const qrImage = new Image();
+    const qrImage = new Image();
 
-  qrImage.onload = () => {
-    ctx.drawImage(qrImage, padding, y, size, size);
+    qrImage.onload = () => {
+      ctx.drawImage(
+        qrImage,
+        padding,
+        y,
+        size,
+        size
+      );
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) return;
-
-      const file = new File([blob], "qr-code.png", {
-        type: "image/png",
-      });
-
-      if (
-        navigator.share &&
-        navigator.canShare &&
-        navigator.canShare({ files: [file] })
-      ) {
-        try {
-          await navigator.share({
-            files: [file],
-            title: "QR Code",
-          });
-          return;
-        } catch (error) {
-          if ((error as DOMException)?.name === "AbortError") {
-            return;
-          }
-        }
-      }
-
-      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-
-      link.href = url;
       link.download = "qr-code.png";
-      link.style.display = "none";
+      link.href = canvas.toDataURL("image/png");
 
       document.body.appendChild(link);
       link.click();
-      link.remove();
+      document.body.removeChild(link);
+    };
 
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 1000);
-    }, "image/png");
+    qrImage.src = qr;
   };
 
-  qrImage.onerror = () => {
-    console.error("Could not load QR image");
-  };
-
-  qrImage.src = qr;
-};
-
-  
   const downloadSVG = () => {
     if (!svg) return;
 
@@ -375,12 +345,17 @@ const downloadPNG = async () => {
 
     link.download = "qr-code.svg";
     link.href = url;
-    link.click();
 
-    URL.revokeObjectURL(url);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 1000);
   };
 
-  const downloadPDF = () => {
+  const downloadPDF = (mobile = false) => {
     if (!qr) return;
 
     const pdf = new jsPDF({
@@ -396,18 +371,64 @@ const downloadPNG = async () => {
     if (title) {
       pdf.setFontSize(24);
       pdf.setTextColor(titleColor);
-      pdf.text(title, pageWidth / 2, 40, { align: "center" });
+      pdf.text(title, pageWidth / 2, 40, {
+        align: "center",
+      });
     }
 
     if (subtitle) {
       pdf.setFontSize(16);
       pdf.setTextColor(subtitleColor);
-      pdf.text(subtitle, pageWidth / 2, 55, { align: "center" });
+      pdf.text(subtitle, pageWidth / 2, 55, {
+        align: "center",
+      });
     }
 
     const y = title || subtitle ? 70 : 50;
-    pdf.addImage(qr, "PNG", x, y, qrSize, qrSize);
-    pdf.save("qr-code.pdf");
+
+    pdf.addImage(
+      qr,
+      "PNG",
+      x,
+      y,
+      qrSize,
+      qrSize
+    );
+
+    if (mobile) {
+      /*
+       * Mobil:
+       * data-URI:er blockeras tyst av bl.a. iOS Safari när man
+       * navigerar ett nytt fönster till dem via JS. En Blob-URL
+       * fungerar däremot pålitligt på både iOS och Android.
+       *
+       * OBS: window.open måste anropas synkront i klick-handlern
+       * (vilket den gör här) annars blockerar popup-blockerare den.
+       */
+      const blob = pdf.output("blob");
+      const blobUrl = URL.createObjectURL(blob);
+
+      const newWindow = window.open(blobUrl, "_blank");
+
+      if (!newWindow) {
+        // Popup blockerad – fall tillbaka till vanlig nedladdning
+        const link = document.createElement("a");
+        link.href = blobUrl;
+        link.download = "qr-code.pdf";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      // Ge fönstret gott om tid att ladda PDF:en innan vi städar upp
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+    } else {
+      /*
+       * Dator:
+       * Behåll vanlig PDF-download.
+       */
+      pdf.save("qr-code.pdf");
+    }
   };
 
   const resetAll = () => {
@@ -495,6 +516,7 @@ const downloadPNG = async () => {
           <div className="text-2xl font-bold">
             QR<span className="text-blue-500">Generator</span>
           </div>
+
           <div className="text-sm text-slate-400">
             Free QR Code Generator
           </div>
@@ -536,9 +558,12 @@ const downloadPNG = async () => {
                         <label className={labelClass}>
                           Network name
                         </label>
+
                         <input
                           value={wifiSSID}
-                          onChange={(e) => setWifiSSID(e.target.value)}
+                          onChange={(e) =>
+                            setWifiSSID(e.target.value)
+                          }
                           className={inputClass}
                           placeholder="My Wi-Fi"
                         />
@@ -548,6 +573,7 @@ const downloadPNG = async () => {
                         <label className={labelClass}>
                           Password
                         </label>
+
                         <input
                           type="password"
                           value={wifiPassword}
@@ -563,6 +589,7 @@ const downloadPNG = async () => {
                         <label className={labelClass}>
                           Security
                         </label>
+
                         <select
                           value={wifiSecurity}
                           onChange={(e) =>
@@ -570,9 +597,17 @@ const downloadPNG = async () => {
                           }
                           className={inputClass}
                         >
-                          <option value="WPA">WPA/WPA2</option>
-                          <option value="WEP">WEP</option>
-                          <option value="nopass">None</option>
+                          <option value="WPA">
+                            WPA/WPA2
+                          </option>
+
+                          <option value="WEP">
+                            WEP
+                          </option>
+
+                          <option value="nopass">
+                            None
+                          </option>
                         </select>
                       </div>
 
@@ -585,6 +620,7 @@ const downloadPNG = async () => {
                           }
                           className="h-4 w-4 accent-blue-600"
                         />
+
                         Hidden network
                       </label>
                     </>
@@ -594,7 +630,9 @@ const downloadPNG = async () => {
                     <>
                       <input
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={(e) =>
+                          setEmail(e.target.value)
+                        }
                         className={inputClass}
                         placeholder="Email address"
                       />
@@ -622,7 +660,9 @@ const downloadPNG = async () => {
                   {qrType === "Phone" && (
                     <input
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
+                      onChange={(e) =>
+                        setPhone(e.target.value)
+                      }
                       className={inputClass}
                       placeholder="+46 70 123 45 67"
                     />
@@ -632,7 +672,9 @@ const downloadPNG = async () => {
                     <>
                       <input
                         value={smsPhone}
-                        onChange={(e) => setSmsPhone(e.target.value)}
+                        onChange={(e) =>
+                          setSmsPhone(e.target.value)
+                        }
                         className={inputClass}
                         placeholder="+46 70 123 45 67"
                       />
@@ -754,18 +796,27 @@ const downloadPNG = async () => {
               )}
 
               <button
-                onClick={downloadPNG}
+                onClick={() => {
+                  if (
+                    typeof window !== "undefined" &&
+                    window.innerWidth < 768
+                  ) {
+                    downloadPDF(true);
+                  } else {
+                    downloadPNG();
+                  }
+                }}
                 disabled={!qr}
                 className="mt-4 w-full rounded-2xl bg-blue-600 px-6 py-4 font-semibold transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Download PNG
+                Download
               </button>
 
               <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/50">
 
                 <button
                   onClick={() => setAdvanced(!advanced)}
-                  className="flex w-full items-center justify-between px-5 py-4 font-medium transition hover:bg-slate-800/60"
+                  className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
                 >
                   <span>Advanced</span>
 
@@ -783,9 +834,10 @@ const downloadPNG = async () => {
 
                     <button
                       onClick={() => toggleSection("type")}
-                      className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-slate-800/50"
+                      className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
                     >
                       <span>QR Type</span>
+
                       <span className="text-slate-500">
                         {section === "type" ? "−" : "+"}
                       </span>
@@ -825,12 +877,17 @@ const downloadPNG = async () => {
                     )}
 
                     <button
-                      onClick={() => toggleSection("appearance")}
+                      onClick={() =>
+                        toggleSection("appearance")
+                      }
                       className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
                     >
                       <span>Appearance</span>
+
                       <span className="text-slate-500">
-                        {section === "appearance" ? "−" : "+"}
+                        {section === "appearance"
+                          ? "−"
+                          : "+"}
                       </span>
                     </button>
 
@@ -845,7 +902,9 @@ const downloadPNG = async () => {
                           <input
                             type="text"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) =>
+                              setTitle(e.target.value)
+                            }
                             placeholder="Subject"
                             className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
                           />
@@ -859,7 +918,9 @@ const downloadPNG = async () => {
                           <input
                             type="text"
                             value={subtitle}
-                            onChange={(e) => setSubtitle(e.target.value)}
+                            onChange={(e) =>
+                              setSubtitle(e.target.value)
+                            }
                             placeholder="Description"
                             className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
                           />
@@ -870,6 +931,7 @@ const downloadPNG = async () => {
                             <label className="text-sm text-slate-300">
                               Size
                             </label>
+
                             <span className="text-sm text-slate-500">
                               {size}px
                             </span>
@@ -882,7 +944,9 @@ const downloadPNG = async () => {
                             step="10"
                             value={size}
                             onChange={(e) =>
-                              setSize(Number(e.target.value))
+                              setSize(
+                                Number(e.target.value)
+                              )
                             }
                             className="w-full accent-blue-600"
                           />
@@ -895,15 +959,34 @@ const downloadPNG = async () => {
 
                           <select
                             value={titleFont}
-                            onChange={(e) => setTitleFont(e.target.value)}
+                            onChange={(e) =>
+                              setTitleFont(e.target.value)
+                            }
                             className={inputClass}
                           >
-                            <option value="Arial">Arial</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Courier New">Courier New</option>
-                            <option value="Verdana">Verdana</option>
+                            <option value="Arial">
+                              Arial
+                            </option>
+
+                            <option value="Helvetica">
+                              Helvetica
+                            </option>
+
+                            <option value="Georgia">
+                              Georgia
+                            </option>
+
+                            <option value="Times New Roman">
+                              Times New Roman
+                            </option>
+
+                            <option value="Courier New">
+                              Courier New
+                            </option>
+
+                            <option value="Verdana">
+                              Verdana
+                            </option>
                           </select>
                         </div>
 
@@ -917,7 +1000,11 @@ const downloadPNG = async () => {
                             min="12"
                             max="60"
                             value={titleSize}
-                            onChange={(e) => setTitleSize(Number(e.target.value))}
+                            onChange={(e) =>
+                              setTitleSize(
+                                Number(e.target.value)
+                              )
+                            }
                             className="w-full accent-blue-600"
                           />
 
@@ -934,7 +1021,9 @@ const downloadPNG = async () => {
                           <input
                             type="color"
                             value={titleColor}
-                            onChange={(e) => setTitleColor(e.target.value)}
+                            onChange={(e) =>
+                              setTitleColor(e.target.value)
+                            }
                             className="h-10 w-16 cursor-pointer rounded-lg border border-slate-700 bg-transparent"
                           />
                         </div>
@@ -946,15 +1035,34 @@ const downloadPNG = async () => {
 
                           <select
                             value={subtitleFont}
-                            onChange={(e) => setSubtitleFont(e.target.value)}
+                            onChange={(e) =>
+                              setSubtitleFont(e.target.value)
+                            }
                             className={inputClass}
                           >
-                            <option value="Arial">Arial</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Courier New">Courier New</option>
-                            <option value="Verdana">Verdana</option>
+                            <option value="Arial">
+                              Arial
+                            </option>
+
+                            <option value="Helvetica">
+                              Helvetica
+                            </option>
+
+                            <option value="Georgia">
+                              Georgia
+                            </option>
+
+                            <option value="Times New Roman">
+                              Times New Roman
+                            </option>
+
+                            <option value="Courier New">
+                              Courier New
+                            </option>
+
+                            <option value="Verdana">
+                              Verdana
+                            </option>
                           </select>
                         </div>
 
@@ -968,7 +1076,11 @@ const downloadPNG = async () => {
                             min="10"
                             max="40"
                             value={subtitleSize}
-                            onChange={(e) => setSubtitleSize(Number(e.target.value))}
+                            onChange={(e) =>
+                              setSubtitleSize(
+                                Number(e.target.value)
+                              )
+                            }
                             className="w-full accent-blue-600"
                           />
 
@@ -985,7 +1097,9 @@ const downloadPNG = async () => {
                           <input
                             type="color"
                             value={subtitleColor}
-                            onChange={(e) => setSubtitleColor(e.target.value)}
+                            onChange={(e) =>
+                              setSubtitleColor(e.target.value)
+                            }
                             className="h-10 w-16 cursor-pointer rounded-lg border border-slate-700 bg-transparent"
                           />
                         </div>
@@ -1025,6 +1139,7 @@ const downloadPNG = async () => {
                             <label className="text-sm text-slate-300">
                               Margin
                             </label>
+
                             <span className="text-sm text-slate-500">
                               {margin}
                             </span>
@@ -1036,7 +1151,9 @@ const downloadPNG = async () => {
                             max="10"
                             value={margin}
                             onChange={(e) =>
-                              setMargin(Number(e.target.value))
+                              setMargin(
+                                Number(e.target.value)
+                              )
                             }
                             className="w-full accent-blue-600"
                           />
@@ -1046,10 +1163,13 @@ const downloadPNG = async () => {
                     )}
 
                     <button
-                      onClick={() => toggleSection("logo")}
+                      onClick={() =>
+                        toggleSection("logo")
+                      }
                       className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
                     >
                       <span>Logo</span>
+
                       <span className="text-slate-500">
                         {section === "logo" ? "−" : "+"}
                       </span>
@@ -1062,7 +1182,9 @@ const downloadPNG = async () => {
                           type="file"
                           accept="image/png,image/jpeg,image/webp,image/svg+xml"
                           onChange={(e) =>
-                            handleLogo(e.target.files?.[0])
+                            handleLogo(
+                              e.target.files?.[0]
+                            )
                           }
                           className="block w-full text-sm text-slate-400 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:font-medium file:text-white"
                         />
@@ -1079,7 +1201,9 @@ const downloadPNG = async () => {
                               </div>
 
                               <button
-                                onClick={() => setLogo(null)}
+                                onClick={() =>
+                                  setLogo(null)
+                                }
                                 className="rounded-xl border border-slate-700 px-4 py-2 text-sm hover:bg-slate-800"
                               >
                                 Remove logo
@@ -1103,7 +1227,9 @@ const downloadPNG = async () => {
                                 max="35"
                                 value={logoSize}
                                 onChange={(e) =>
-                                  setLogoSize(Number(e.target.value))
+                                  setLogoSize(
+                                    Number(e.target.value)
+                                  )
                                 }
                                 className="w-full accent-blue-600"
                               />
@@ -1114,10 +1240,13 @@ const downloadPNG = async () => {
                                 type="checkbox"
                                 checked={logoBackground}
                                 onChange={(e) =>
-                                  setLogoBackground(e.target.checked)
+                                  setLogoBackground(
+                                    e.target.checked
+                                  )
                                 }
                                 className="h-4 w-4 accent-blue-600"
                               />
+
                               White background behind logo
                             </label>
                           </>
@@ -1127,12 +1256,17 @@ const downloadPNG = async () => {
                     )}
 
                     <button
-                      onClick={() => toggleSection("settings")}
+                      onClick={() =>
+                        toggleSection("settings")
+                      }
                       className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
                     >
                       <span>QR Settings</span>
+
                       <span className="text-slate-500">
-                        {section === "settings" ? "−" : "+"}
+                        {section === "settings"
+                          ? "−"
+                          : "+"}
                       </span>
                     </button>
 
@@ -1144,63 +1278,93 @@ const downloadPNG = async () => {
                         </label>
 
                         <select
-                          value={logo ? "H" : errorCorrection}
+                          value={
+                            logo
+                              ? "H"
+                              : errorCorrection
+                          }
                           disabled={!!logo}
                           onChange={(e) =>
                             setErrorCorrection(
-                              e.target.value as "L" | "M" | "Q" | "H"
+                              e.target.value as
+                                | "L"
+                                | "M"
+                                | "Q"
+                                | "H"
                             )
                           }
                           className={`${inputClass} disabled:opacity-50`}
                         >
-                          <option value="L">Low — 7%</option>
-                          <option value="M">Medium — 15%</option>
-                          <option value="Q">Quartile — 25%</option>
-                          <option value="H">High — 30%</option>
+                          <option value="L">
+                            Low — 7%
+                          </option>
+
+                          <option value="M">
+                            Medium — 15%
+                          </option>
+
+                          <option value="Q">
+                            Quartile — 25%
+                          </option>
+
+                          <option value="H">
+                            High — 30%
+                          </option>
                         </select>
 
                       </div>
                     )}
 
-                    <button
-                      onClick={() => toggleSection("output")}
-                      className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
-                    >
-                      <span>Output</span>
-                      <span className="text-slate-500">
-                        {section === "output" ? "−" : "+"}
-                      </span>
-                    </button>
+                    <div className="hidden md:block">
 
-                    {section === "output" && (
-                      <div className="space-y-3 border-b border-slate-800 p-5">
+                      <button
+                        onClick={() =>
+                          toggleSection("output")
+                        }
+                        className="flex w-full items-center justify-between border-b border-slate-800 px-5 py-4 text-left hover:bg-slate-800/50"
+                      >
+                        <span>Output</span>
 
-                        <button
-                          onClick={downloadPNG}
-                          disabled={!qr}
-                          className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
-                        >
-                          PNG
-                        </button>
+                        <span className="text-slate-500">
+                          {section === "output"
+                            ? "−"
+                            : "+"}
+                        </span>
+                      </button>
 
-                        <button
-                          onClick={downloadSVG}
-                          disabled={!svg}
-                          className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
-                        >
-                          SVG
-                        </button>
+                      {section === "output" && (
+                        <div className="space-y-3 border-b border-slate-800 p-5">
 
-                        <button
-                          onClick={downloadPDF}
-                          disabled={!qr}
-                          className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
-                        >
-                          PDF
-                        </button>
+                          <button
+                            onClick={downloadPNG}
+                            disabled={!qr}
+                            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
+                          >
+                            PNG
+                          </button>
 
-                      </div>
-                    )}
+                          <button
+                            onClick={downloadSVG}
+                            disabled={!svg}
+                            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
+                          >
+                            SVG
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              downloadPDF(false)
+                            }
+                            disabled={!qr}
+                            className="w-full rounded-xl bg-slate-800 px-4 py-3 text-left hover:bg-slate-700 disabled:opacity-40"
+                          >
+                            PDF
+                          </button>
+
+                        </div>
+                      )}
+
+                    </div>
 
                   </div>
                 )}
@@ -1211,7 +1375,9 @@ const downloadPNG = async () => {
           </div>
 
           <div className="flex justify-center lg:sticky lg:top-4 lg:self-start">
-            <div className="rounded-3xl bg-white p-8 shadow-2xl shadow-blue-950/30 text-center">
+
+            <div className="rounded-3xl bg-white p-8 text-center shadow-2xl shadow-blue-950/30">
+
               {title && (
                 <div
                   style={{
@@ -1220,12 +1386,13 @@ const downloadPNG = async () => {
                     color: titleColor,
                     fontWeight: "bold",
                     marginBottom: "8px",
-                    wordBreak: "break-word"
+                    wordBreak: "break-word",
                   }}
                 >
                   {title}
                 </div>
               )}
+
               {subtitle && (
                 <div
                   style={{
@@ -1233,12 +1400,13 @@ const downloadPNG = async () => {
                     fontSize: `${subtitleSize}px`,
                     color: subtitleColor,
                     marginBottom: "16px",
-                    wordBreak: "break-word"
+                    wordBreak: "break-word",
                   }}
                 >
                   {subtitle}
                 </div>
               )}
+
               {qr ? (
                 <img
                   src={qr}
@@ -1250,6 +1418,7 @@ const downloadPNG = async () => {
                   Enter information to generate QR
                 </div>
               )}
+
             </div>
           </div>
 
@@ -1314,6 +1483,7 @@ const downloadPNG = async () => {
         >
           Reset
         </button>
+
         <footer className="border-t border-slate-800 py-6 text-center text-sm text-slate-500">
           No account required • No permanent storage
         </footer>
