@@ -389,21 +389,38 @@ END:VEVENT`;
   };
 
   const downloadPDF = () => {
-    if (!qr) return;
+  if (!qr) return;
 
-    const pdf = new jsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-    });
+  const pdf = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const qrSize = 100;
-    const x = (pageWidth - qrSize) / 2;
+  const pageWidth = pdf.internal.pageSize.getWidth();
+  const pageHeight = pdf.internal.pageSize.getHeight();
+  const qrSize = 80;
+  const x = (pageWidth - qrSize) / 2;
+  
+  // Titel
+  if (title) {
+    pdf.setFontSize(24);
+    pdf.setTextColor(titleColor);
+    pdf.text(title, pageWidth / 2, 40, { align: "center" });
+  }
+  
+  // Subtitle
+  if (subtitle) {
+    pdf.setFontSize(16);
+    pdf.setTextColor(subtitleColor);
+    pdf.text(subtitle, pageWidth / 2, 55, { align: "center" });
+  }
 
-    pdf.addImage(qr, "PNG", x, 60, qrSize, qrSize);
-    pdf.save("qr-code.pdf");
-  };
+  // QR-kod
+  const y = title || subtitle ? 70 : 50;
+  pdf.addImage(qr, "PNG", x, y, qrSize, qrSize);
+  pdf.save("qr-code.pdf");
+};
 
   const resetAll = () => {
     setText("https://example.com");
@@ -1213,15 +1230,17 @@ END:VEVENT`;
             </div>
           </div>
 
-          <div className="flex justify-center">
+          <div className="flex justify-center lg:sticky lg:top-4 lg:self-start">
             <div className="rounded-3xl bg-white p-8 shadow-2xl shadow-blue-950/30">
 
               {qr ? (
-                <img
-                  src={qr}
-                  alt="Generated QR code"
-                  className="h-72 w-72 md:h-96 md:w-96"
-                />
+
+<img
+  src={qr}
+  alt="Generated QR code"
+  style={{ width: size, height: size }}
+/>
+
               ) : (
                 <div className="flex h-72 w-72 items-center justify-center text-slate-400 md:h-96 md:w-96">
                   Enter information to generate QR
