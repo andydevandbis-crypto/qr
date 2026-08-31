@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
@@ -24,26 +24,26 @@ export const metadata: Metadata = {
     "Wi-Fi QR",
     "vCard QR",
     "QR code free",
-    "generador de código QR",
-    "générateur de code QR",
+    "generador de cÃ³digo QR",
+    "gÃ©nÃ©rateur de code QR",
     "QR-Code-Generator",
     "generatore di codici QR",
-    "gerador de código QR",
+    "gerador de cÃ³digo QR",
     "QR-code generator",
-    "darmowy generator kodów QR",
-    "генератор QR-кодов",
-    "QRコード生成",
-    "二维码生成器",
-    "مولد رمز QR",
+    "darmowy generator kodÃ³w QR",
+    "Ð³ÐµÐ½ÐµÑ€Ð°Ñ‚Ð¾Ñ€ QR-ÐºÐ¾Ð´Ð¾Ð²",
+    "QRã‚³ãƒ¼ãƒ‰ç”Ÿæˆ",
+    "äºŒç»´ç ç”Ÿæˆå™¨",
+    "Ù…ÙˆÙ„Ø¯ Ø±Ù…Ø² QR",
   ],
   openGraph: {
     title: "QRGenerator - Free QR Code Generator",
     description: "Create QR codes instantly in your browser. Free and no registration required.",
-    url: "https://qr-git-master-andy-d79f.vercel.app/",
+    url: "https://qr-two-flax.vercel.app/",
     siteName: "QRGenerator",
     images: [
       {
-        url: "https://qr-git-master-andy-d79f.vercel.app/og-image.png",
+        url: "https://qr-two-flax.vercel.app/og-image.png",
         width: 1200,
         height: 630,
         alt: "QRGenerator - Free QR Code Generator",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "QRGenerator - Free QR Code Generator",
     description: "Create QR codes instantly in your browser. Free and no registration required.",
-    images: ["https://qr-git-master-andy-d79f.vercel.app/og-image.png"],
+    images: ["https://qr-two-flax.vercel.app/og-image.png"],
   },
   robots: {
     index: true,
