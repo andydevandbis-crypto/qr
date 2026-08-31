@@ -516,36 +516,27 @@ END:VEVENT`;
           <div className="text-2xl font-bold">
             QR<span className="text-blue-500">Generator</span>
           </div>
-
           <div className="text-sm text-slate-400">
             Free QR Code Generator
           </div>
         </header>
 
+        <p className="text-sm font-semibold uppercase tracking-widest text-blue-400">
+          Simple • Fast • Private
+        </p>
+
         <section className="grid flex-1 items-center gap-12 py-16 md:grid-cols-2">
 
-          <div>
-
-            <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-blue-400">
-              Simple • Fast • Private
-            </p>
+          <div className="text-center md:text-left">
 
             <h1 className="text-5xl font-bold tracking-tight md:text-6xl">
               Create your QR code
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg text-slate-400">
-              Generate a QR code instantly. Your data stays in your browser.
-            </p>
-
             <div className="mt-10">
 
               {qrType === "URL" || qrType === "Text" ? (
                 <>
-                  <label className={labelClass}>
-                    {qrType === "URL" ? "URL" : "Text"}
-                  </label>
-
                   <textarea
                     value={text}
                     onChange={(e) => setText(e.target.value)}
