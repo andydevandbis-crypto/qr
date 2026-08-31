@@ -35,12 +35,12 @@ export default function Home() {
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-    const [titleFont, setTitleFont] = useState("Arial");
-    const [titleSize, setTitleSize] = useState(28);
-    const [titleColor, setTitleColor] = useState("#000000");
-    const [subtitleFont, setSubtitleFont] = useState("Arial");
-    const [subtitleSize, setSubtitleSize] = useState(18);
-    const [subtitleColor, setSubtitleColor] = useState("#64748b");
+  const [titleFont, setTitleFont] = useState("Arial");
+  const [titleSize, setTitleSize] = useState(28);
+  const [titleColor, setTitleColor] = useState("#000000");
+  const [subtitleFont, setSubtitleFont] = useState("Arial");
+  const [subtitleSize, setSubtitleSize] = useState(18);
+  const [subtitleColor, setSubtitleColor] = useState("#64748b");
   const [margin, setMargin] = useState(2);
   const [errorCorrection, setErrorCorrection] =
     useState<"L" | "M" | "Q" | "H">("H");
@@ -252,6 +252,14 @@ END:VEVENT`;
     eventLocation,
     eventStart,
     eventEnd,
+    title,
+    subtitle,
+    titleFont,
+    titleSize,
+    titleColor,
+    subtitleFont,
+    subtitleSize,
+    subtitleColor,
   ]);
 
   const downloadPNG = () => {
@@ -283,16 +291,16 @@ END:VEVENT`;
     ctx.textAlign = "center";
 
     if (title) {
-      ctx.fillStyle = qrColor;
-      ctx.font = "bold 28px Arial";
-      ctx.fillText(title, canvas.width / 2, y + 28);
+      ctx.fillStyle = titleColor || qrColor;
+      ctx.font = `bold ${titleSize}px ${titleFont}`;
+      ctx.fillText(title, canvas.width / 2, y + titleSize);
       y += titleHeight;
     }
 
     if (subtitle) {
-      ctx.fillStyle = "#64748b";
-      ctx.font = "18px Arial";
-      ctx.fillText(subtitle, canvas.width / 2, y + 22);
+      ctx.fillStyle = subtitleColor || "#64748b";
+      ctx.font = `${subtitleSize}px ${subtitleFont}`;
+      ctx.fillText(subtitle, canvas.width / 2, y + subtitleSize);
       y += subtitleHeight;
     }
 
@@ -371,6 +379,7 @@ END:VEVENT`;
 
     qrImage.src = qr;
   };
+
   const downloadSVG = () => {
     if (!svg) return;
 
@@ -388,39 +397,39 @@ END:VEVENT`;
     URL.revokeObjectURL(url);
   };
 
-  const downloadPDF = () => {
-  if (!qr) return;
+    const downloadPDF = () => {
+    if (!qr) return;
 
-  const pdf = new jsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-  });
+    const pdf = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-  const qrSize = 80;
-  const x = (pageWidth - qrSize) / 2;
-  
-  // Titel
-  if (title) {
-    pdf.setFontSize(24);
-    pdf.setTextColor(titleColor);
-    pdf.text(title, pageWidth / 2, 40, { align: "center" });
-  }
-  
-  // Subtitle
-  if (subtitle) {
-    pdf.setFontSize(16);
-    pdf.setTextColor(subtitleColor);
-    pdf.text(subtitle, pageWidth / 2, 55, { align: "center" });
-  }
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const qrSize = 80;
+    const x = (pageWidth - qrSize) / 2;
+    
+    // Titel
+    if (title) {
+      pdf.setFontSize(24);
+      pdf.setTextColor(titleColor);
+      pdf.text(title, pageWidth / 2, 40, { align: "center" });
+    }
+    
+    // Subtitle
+    if (subtitle) {
+      pdf.setFontSize(16);
+      pdf.setTextColor(subtitleColor);
+      pdf.text(subtitle, pageWidth / 2, 55, { align: "center" });
+    }
 
-  // QR-kod
-  const y = title || subtitle ? 70 : 50;
-  pdf.addImage(qr, "PNG", x, y, qrSize, qrSize);
-  pdf.save("qr-code.pdf");
-};
+    // QR-kod
+    const y = title || subtitle ? 70 : 50;
+    pdf.addImage(qr, "PNG", x, y, qrSize, qrSize);
+    pdf.save("qr-code.pdf");
+  };
 
   const resetAll = () => {
     setText("https://example.com");
@@ -475,6 +484,7 @@ END:VEVENT`;
     setEventStart("");
     setEventEnd("");
   };
+
   const handleLogo = (file: File | undefined) => {
     if (!file) return;
     if (!file.type.startsWith("image/")) return;
@@ -801,7 +811,6 @@ END:VEVENT`;
                 {advanced && (
                   <div className="border-t border-slate-800">
 
-
                     <button
                       onClick={() => toggleSection("type")}
                       className="flex w-full items-center justify-between px-5 py-4 text-left hover:bg-slate-800/50"
@@ -885,6 +894,7 @@ END:VEVENT`;
                             className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white outline-none focus:border-blue-500"
                           />
                         </div>
+
                         <div>
                           <div className="mb-2 flex justify-between">
                             <label className="text-sm text-slate-300">
@@ -1231,22 +1241,45 @@ END:VEVENT`;
           </div>
 
           <div className="flex justify-center lg:sticky lg:top-4 lg:self-start">
-            <div className="rounded-3xl bg-white p-8 shadow-2xl shadow-blue-950/30">
-
+            <div className="rounded-3xl bg-white p-8 shadow-2xl shadow-blue-950/30 text-center">
+              {title && (
+                <div
+                  style={{
+                    fontFamily: titleFont,
+                    fontSize: `${titleSize}px`,
+                    color: titleColor,
+                    fontWeight: "bold",
+                    marginBottom: "8px",
+                    wordBreak: "break-word"
+                  }}
+                >
+                  {title}
+                </div>
+              )}
+              {subtitle && (
+                <div
+                  style={{
+                    fontFamily: subtitleFont,
+                    fontSize: `${subtitleSize}px`,
+                    color: subtitleColor,
+                    marginBottom: "16px",
+                    wordBreak: "break-word"
+                  }}
+                >
+                  {subtitle}
+                </div>
+              )}
               {qr ? (
-
-<img
-  src={qr}
-  alt="Generated QR code"
-  style={{ width: size, height: size }}
-/>
-
+                <img
+                  src={qr}
+                  alt="Generated QR code"
+                  style={{ width: size, height: size }}
+                />
               ) : (
                 <div className="flex h-72 w-72 items-center justify-center text-slate-400 md:h-96 md:w-96">
                   Enter information to generate QR
                 </div>
               )}
-
             </div>
           </div>
 
@@ -1319,17 +1352,3 @@ END:VEVENT`;
     </main>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
