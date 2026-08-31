@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import * as QRCode from "qrcode";
@@ -263,7 +263,6 @@ END:VEVENT`;
   ]);
 
   const downloadPNG = () => {
-console.log("KÖR");
     if (!qr) return;
 
     const canvas = document.createElement("canvas");
@@ -320,15 +319,15 @@ console.log("KÖR");
         size
       );
 
-      // DIREKTNEDLADDNING – INGEN POPUP
-     canvas.toBlob((blob) => {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "qr-code.png";
-  link.click();
-  URL.revokeObjectURL(url);
-});
+      const finalImage = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a");
+      link.download = "qr-code.png";
+      link.href = finalImage;
+
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
     };
 
     qrImage.src = qr;

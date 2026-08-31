@@ -263,7 +263,6 @@ END:VEVENT`;
   ]);
 
   const downloadPNG = () => {
-console.log("KÖR");
     if (!qr) return;
 
     const canvas = document.createElement("canvas");
@@ -321,14 +320,12 @@ console.log("KÖR");
       );
 
       // DIREKTNEDLADDNING – INGEN POPUP
-     canvas.toBlob((blob) => {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "qr-code.png";
-  link.click();
-  URL.revokeObjectURL(url);
-});
+      const link = document.createElement("a");
+      link.download = "qr-code.png";
+      link.href = canvas.toDataURL("image/png");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     };
 
     qrImage.src = qr;
