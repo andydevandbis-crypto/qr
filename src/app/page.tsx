@@ -397,7 +397,7 @@ END:VEVENT`;
     URL.revokeObjectURL(url);
   };
 
-    const downloadPDF = () => {
+  const downloadPDF = () => {
     if (!qr) return;
 
     const pdf = new jsPDF({
@@ -407,25 +407,21 @@ END:VEVENT`;
     });
 
     const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
     const qrSize = 80;
     const x = (pageWidth - qrSize) / 2;
-    
-    // Titel
+
     if (title) {
       pdf.setFontSize(24);
       pdf.setTextColor(titleColor);
       pdf.text(title, pageWidth / 2, 40, { align: "center" });
     }
-    
-    // Subtitle
+
     if (subtitle) {
       pdf.setFontSize(16);
       pdf.setTextColor(subtitleColor);
       pdf.text(subtitle, pageWidth / 2, 55, { align: "center" });
     }
 
-    // QR-kod
     const y = title || subtitle ? 70 : 50;
     pdf.addImage(qr, "PNG", x, y, qrSize, qrSize);
     pdf.save("qr-code.pdf");
