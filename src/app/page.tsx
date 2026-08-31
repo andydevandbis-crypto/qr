@@ -262,75 +262,107 @@ END:VEVENT`;
     subtitleColor,
   ]);
 
-  const downloadPNG = () => {
-    if (!qr) return;
+const downloadPNG = async () => {
+  if (!qr) return;
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
 
-    if (!ctx) return;
+  if (!ctx) return;
 
-    const padding = 40;
-    const titleHeight = title ? 50 : 0;
-    const subtitleHeight = subtitle ? 35 : 0;
-    const textSpacing = title || subtitle ? 25 : 0;
+  const padding = 40;
+  const titleHeight = title ? 50 : 0;
+  const subtitleHeight = subtitle ? 35 : 0;
+  const textSpacing = title || subtitle ? 25 : 0;
 
-    canvas.width = size + padding * 2;
-    canvas.height =
-      size +
-      padding * 2 +
-      titleHeight +
-      subtitleHeight +
-      textSpacing;
+  canvas.width = size + padding * 2;
+  canvas.height =
+    size +
+    padding * 2 +
+    titleHeight +
+    subtitleHeight +
+    textSpacing;
 
-    ctx.fillStyle = backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = backgroundColor;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    let y = padding;
+  let y = padding;
 
-    ctx.textAlign = "center";
+  ctx.textAlign = "center";
 
-    if (title) {
-      ctx.fillStyle = titleColor || qrColor;
-      ctx.font = `bold ${titleSize}px ${titleFont}`;
-      ctx.fillText(title, canvas.width / 2, y + titleSize);
-      y += titleHeight;
-    }
+  if (title) {
+    ctx.fillStyle = titleColor || qrColor;
+    ctx.font = `bold ${titleSize}px ${titleFont}`;
+    ctx.fillText(title, canvas.width / 2, y + titleSize);
+    y += titleHeight;
+  }
 
-    if (subtitle) {
-      ctx.fillStyle = subtitleColor || "#64748b";
-      ctx.font = `${subtitleSize}px ${subtitleFont}`;
-      ctx.fillText(subtitle, canvas.width / 2, y + subtitleSize);
-      y += subtitleHeight;
-    }
+  if (subtitle) {
+    ctx.fillStyle = subtitleColor || "#64748b";
+    ctx.font = `${subtitleSize}px ${subtitleFont}`;
+    ctx.fillText(subtitle, canvas.width / 2, y + subtitleSize);
+    y += subtitleHeight;
+  }
 
-    if (title || subtitle) {
-      y += textSpacing;
-    }
+  if (title || subtitle) {
+    y += textSpacing;
+  }
 
-    const qrImage = new Image();
+  const qrImage = new Image();
 
-    qrImage.onload = () => {
-      ctx.drawImage(
-        qrImage,
-        padding,
-        y,
-        size,
-        size
-      );
+  qrImage.onload = () => {
+    ctx.drawImage(qrImage, padding, y, size, size);
 
-      // DIREKTNEDLADDNING – INGEN POPUP
+    canvas.toBlob(async (blob) => {
+      if (!blob) return;
+
+      const file = new File([blob], "qr-code.png", {
+        type: "image/png",
+      });
+
+      if (
+        navigator.share &&
+        navigator.canShare &&
+        navigator.canShare({ files: [file] })
+      ) {
+        try {
+          await navigator.share({
+            files: [file],
+            title: "QR Code",
+          });
+          return;
+        } catch (error) {
+          if ((error as DOMException)?.name === "AbortError") {
+            return;
+          }
+        }
+      }
+
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
+
+      link.href = url;
       link.download = "qr-code.png";
-      link.href = canvas.toDataURL("image/png");
+      link.style.display = "none";
+
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-    };
+      link.remove();
 
-    qrImage.src = qr;
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 1000);
+    }, "image/png");
   };
 
+  qrImage.onerror = () => {
+    console.error("Could not load QR image");
+  };
+
+  qrImage.src = qr;
+};
+
+  
   const downloadSVG = () => {
     if (!svg) return;
 
