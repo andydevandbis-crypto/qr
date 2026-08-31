@@ -1273,7 +1273,7 @@ END:VEVENT`;
                 <img
                   src={qr}
                   alt="Generated QR code"
-                  style={{ width: size, height: size }}
+                  className="h-72 w-72 md:h-96 md:w-96"
                 />
               ) : (
                 <div className="flex h-72 w-72 items-center justify-center text-slate-400 md:h-96 md:w-96">
