@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import * as QRCode from "qrcode";
@@ -320,53 +320,6 @@ END:VEVENT`;
       );
 
       const finalImage = canvas.toDataURL("image/png");
-
-      const isIOS =
-        /iPad|iPhone|iPod/.test(navigator.userAgent) &&
-        !(window as any).MSStream;
-
-      if (isIOS) {
-        const newWindow = window.open();
-
-        if (!newWindow) {
-          alert("Tillåt popup-fönster för att spara QR-koden.");
-          return;
-        }
-
-        newWindow.document.write(`
-          <html>
-            <head>
-              <title>${title || "QR Code"}</title>
-              <meta name="viewport" content="width=device-width, initial-scale=1">
-            </head>
-            <body style="
-              margin:0;
-              min-height:100vh;
-              display:flex;
-              align-items:center;
-              justify-content:center;
-              background:#0f172a;
-            ">
-              <img
-                src="${finalImage}"
-                alt="QR Code"
-                style="
-                  max-width:90vw;
-                  max-height:90vh;
-                  height:auto;
-                  background:white;
-                  padding:12px;
-                  box-sizing:border-box;
-                  border-radius:20px;
-                "
-              />
-            </body>
-          </html>
-        `);
-
-        newWindow.document.close();
-        return;
-      }
 
       const link = document.createElement("a");
       link.download = "qr-code.png";
